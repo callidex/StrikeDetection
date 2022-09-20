@@ -1,6 +1,13 @@
 
 using Geolocation;
 using Services.Nav;
+
+
+public class DetectionInstance
+{
+    public List<DetectorPointDTO> Points { get; set; }
+}
+
 /// <summary>
 /// The grunt work goes here
 /// </summary>
@@ -8,7 +15,7 @@ public class DetectionService
 {
     const double velocity = 299792458;
 
-    public string Test(List<DetectorPoint> points)
+    public string Test(DetectionInstance instance)
     {
         double target_lat = 0;
         double target_lon = 0;
@@ -16,20 +23,15 @@ public class DetectionService
         double target_z = 0;
         int it_cnt;
         List<GeoPoint3DT> allDetectors = new List<GeoPoint3DT>();
-        if (!points.Any() || points.Count < 3) return "Not enough points to calculate";
+        if (!instance.Points.Any() || instance.Points.Count < 3) return "Not enough points to calculate";
         // we have X points, location and time they 'heard' the signal.  Now convert that into deltas between them
-
-        var ordered = points.OrderBy(x => x.TimeFromTarget);
+        var ordered = instance.Points.OrderBy(x => x.TimeFromTarget);
         var current = ordered.First().TimeFromTarget;
         foreach (var p in ordered)
         {
-            p.Delta = p.TimeFromTarget - current;
+            var delta = p.TimeFromTarget - current;
             current = p.TimeFromTarget;
-        }
-
-        foreach (var p in points)
-        {
-            allDetectors.Add(new GeoPoint3DT(p.Lat, p.Lon, p.Hgt, p.Delta, p.Label));
+            allDetectors.Add(new GeoPoint3DT(p.Lat, p.Lon, p.Hgt, delta, p.Label));
         }
 
         var centre = Navigation.TDOA_Locate3D(allDetectors.ToArray(),
@@ -43,8 +45,6 @@ public class DetectionService
             return "No Solution Found";
         }
         return $"LAT: {target_lat:F07}°   LON: {target_lon:F07}°  Height: {target_z} Estimated radial error: {radialError:F03} m, Iterations: {it_cnt}";
-
-
     }
     void CalculateDistancesFromTarget(DetectorPoint target)
     {
