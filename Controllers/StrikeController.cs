@@ -20,15 +20,18 @@ public class StrikePoint
 public class StrikeController : ControllerBase
 {
     private readonly ILogger<StrikeController> _logger;
+    private readonly DetectionService _service;
 
     public StrikeController(ILogger<StrikeController> logger)
     {
         _logger = logger;
+        _service = new DetectionService();
     }
 
-    [HttpGet(Name = "FindStrikePoint")]
+    [HttpGet]
+    [Route("FindStrikePoint")]
     public async Task<ActionResult<StrikePoint>> FindStrikePoint([FromQuery] DetectionInstance detections)
     {
-        return Ok();
+        return Ok(_service.Test());
     }
 }
