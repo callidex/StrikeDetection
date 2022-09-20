@@ -7,10 +7,8 @@ using Services.Nav;
 public class DetectionService
 {
     const double velocity = 299792458;
-    public List<DetectorPoint> Points = new List<DetectorPoint>();
 
-
-    public string Test()
+    public string Test(List<DetectorPoint> points)
     {
         double target_lat = 0;
         double target_lon = 0;
@@ -18,18 +16,27 @@ public class DetectionService
         double target_z = 0;
         int it_cnt;
         List<GeoPoint3DT> allDetectors = new List<GeoPoint3DT>();
+        if (!points.Any() || points.Count < 3) return "Not enough points to calculate";
+        // we have X points, location and time they 'heard' the signal.  Now convert that into deltas between them
 
-        foreach (var p in Points)
+        var ordered = points.OrderBy(x => x.TimeFromTarget);
+        var current = ordered.First().TimeFromTarget;
+        foreach (var p in ordered)
+        {
+            p.Delta = p.TimeFromTarget - current;
+            current = p.TimeFromTarget;
+        }
+
+        foreach (var p in points)
         {
             allDetectors.Add(new GeoPoint3DT(p.Lat, p.Lon, p.Hgt, p.Delta, p.Label));
         }
 
         var centre = Navigation.TDOA_Locate3D(allDetectors.ToArray(),
-                                          double.NaN, double.NaN,
-                                          double.NaN,
+                                          double.NaN, double.NaN, double.NaN,  // last known positions, never used here
                                           Algorithms.NLM_DEF_IT_LIMIT, Algorithms.NLM_DEF_PREC_THRLD, 10,
                                           Algorithms.WGS84Ellipsoid,
-                                          velocity,
+                                          velocity,  // how fast is the signal moving (maybe this is too fast for non-theory?)
                                           out target_lat, out target_lon, out target_z, out radialError, out it_cnt);
         if (it_cnt > Algorithms.NLM_DEF_IT_LIMIT)
         {
@@ -46,15 +53,19 @@ public class DetectionService
 
 }
 
-public class DetectorPoint
+public class DetectorPointDTO
 {
     public double Lon { get; set; }
     public double Lat { get; set; }
     public double Hgt { get; set; }
-
+    public double TimeFromTarget { get; set; }
     public string Label { get; set; }
+}
+
+public class DetectorPoint : DetectorPointDTO
+{
+
     public double DistanceFromTarget { get; internal set; }
-    public double TimeFromTarget { get; internal set; }
     public double Delta { get; internal set; }
     public string V { get; }
 
