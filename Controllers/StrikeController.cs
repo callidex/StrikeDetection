@@ -37,6 +37,7 @@ public class StrikeController : ControllerBase
     public async Task<ActionResult<StrikePoint>> FindStrikePointWithDetectors([FromBody] List<DetectorSample> detectorSamples)
     {
         var dt = new DetectionInstance();
+        dt.Points = new List<DetectorPointDTO>();
         foreach (var d in detectorSamples)
         {
             var point = _service.GetPointFromDetectorID(d.DetectorID);
