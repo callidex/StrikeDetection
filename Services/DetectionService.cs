@@ -46,6 +46,14 @@ public class DetectionService
         }
         return $"LAT: {target_lat:F07}°   LON: {target_lon:F07}°  Height: {target_z} Estimated radial error: {radialError:F03} m, Iterations: {it_cnt}";
     }
+
+    internal DetectorPoint GetPointFromDetectorID(int detectorID)
+    {
+        //TODO: Call out to either db  or Bobs Lightsrv to get status
+        // populate coords and label
+        return new DetectorPoint();
+    }
+
     void CalculateDistancesFromTarget(DetectorPoint target)
     {
 

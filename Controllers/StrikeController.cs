@@ -31,4 +31,26 @@ public class StrikeController : ControllerBase
 
         return Ok(_service.Test(detections));
     }
+
+    [HttpPost]
+    [Route("FindStrikePointWithDetectors")]
+    public async Task<ActionResult<StrikePoint>> FindStrikePointWithDetectors([FromBody] List<DetectorSample> detectorSamples)
+    {
+        var dt = new DetectionInstance();
+        foreach (var d in detectorSamples)
+        {
+            var point = _service.GetPointFromDetectorID(d.DetectorID);
+            if (point != null)
+            {
+                point.TimeFromTarget = d.TimeStamp;
+                dt.Points.Add(point);
+            }
+        }
+        return Ok(_service.Test(dt));
+    }
+    public class DetectorSample
+    {
+        public int DetectorID { get; set; }
+        public double TimeStamp { get; set; }
+    }
 }
