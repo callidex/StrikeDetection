@@ -44,7 +44,7 @@ public class DetectionService
         {
             return "No Solution Found";
         }
-        return $"LAT: {target_lat:F07}°   LON: {target_lon:F07}°  Height: {target_z} Estimated radial error: {radialError:F03} m, Iterations: {it_cnt}";
+        return $"{centre.ToString()} LAT: {target_lat:F07}°   LON: {target_lon:F07}°  Height: {target_z} Estimated radial error: {radialError:F03} m, Iterations: {it_cnt}     https://www.google.com/maps/@{target_lat:F07},{target_lon:F07},13z     ";
     }
 
     internal class BobsDetectorInfo
@@ -66,8 +66,9 @@ public class DetectionService
         bobsClient.BaseAddress = new Uri("http://lightning.vk4ya.com:9080/");
         var response = await bobsClient.GetAsync($"/detector/{detectorID}");
         BobsDetectorInfo b = (BobsDetectorInfo)await response.Content.ReadFromJsonAsync(typeof(BobsDetectorInfo));
-
-        return new DetectorPoint(b.Lon, b.Lat, b.Height, detectorID.ToString());
+        if (b != null)
+            return new DetectorPoint(b.Lon, b.Lat, b.Height, detectorID.ToString());
+        else return null;
     }
 
     void CalculateDistancesFromTarget(DetectorPoint target)

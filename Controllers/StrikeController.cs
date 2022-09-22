@@ -48,8 +48,21 @@ public class StrikeController : ControllerBase
                 dt.Points.Add(point);
             }
         }
-        return Ok(_service.Test(dt));
+        var dr = new DetectorsResponse()
+        {
+            Components = dt
+        };
+        dr.Result = _service.Test(dt);
+
+        return Ok(dr);
     }
+    public class DetectorsResponse
+    {
+        public string Result { get; set; }
+        public DetectionInstance Components { get; set; }
+
+    }
+
     public class DetectorSample
     {
         public int DetectorID { get; set; }
