@@ -40,9 +40,10 @@ public class StrikeController : ControllerBase
         dt.Points = new List<DetectorPointDTO>();
         foreach (var d in detectorSamples)
         {
-            var point = _service.GetPointFromDetectorID(d.DetectorID);
+            var point = await _service.GetPointFromDetectorID(d.DetectorID);
             if (point != null)
             {
+
                 point.TimeFromTarget = d.TimeStamp;
                 dt.Points.Add(point);
             }

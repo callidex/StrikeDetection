@@ -47,11 +47,27 @@ public class DetectionService
         return $"LAT: {target_lat:F07}°   LON: {target_lon:F07}°  Height: {target_z} Estimated radial error: {radialError:F03} m, Iterations: {it_cnt}";
     }
 
-    internal DetectorPoint GetPointFromDetectorID(int detectorID)
+    internal class BobsDetectorInfo
+    {
+        public int id { get; set; }
+
+        public double Lon { get; set; }
+        public double Lat { get; set; }
+        public double Height { get; set; }
+
+    }
+
+    internal async Task<DetectorPoint> GetPointFromDetectorID(int detectorID)
     {
         //TODO: Call out to either db  or Bobs Lightsrv to get status
         // populate coords and label
-        return new DetectorPoint();
+
+        HttpClient bobsClient = new HttpClient();
+        bobsClient.BaseAddress = new Uri("http://lightning.vk4ya.com:9080/");
+        var response = await bobsClient.GetAsync($"/detector/{detectorID}");
+        BobsDetectorInfo b = (BobsDetectorInfo)await response.Content.ReadFromJsonAsync(typeof(BobsDetectorInfo));
+
+        return new DetectorPoint(b.Lon, b.Lat, b.Height, detectorID.ToString());
     }
 
     void CalculateDistancesFromTarget(DetectorPoint target)
@@ -77,9 +93,7 @@ public class DetectorPoint : DetectorPointDTO
     public double Delta { get; internal set; }
     public string V { get; }
 
-    public DetectorPoint()
-    {
-    }
+
 
     public DetectorPoint(double Lon, double Lat)
     {
@@ -87,15 +101,12 @@ public class DetectorPoint : DetectorPointDTO
         this.Lat = Lat;
     }
 
-    public DetectorPoint(double Lon, double Lat, string name) : this(Lon, Lat)
-    {
-        this.Label = name;
-    }
+
 
     public DetectorPoint(double Lon, double Lat, double hgt) : this(Lon, Lat)
     {
-        //Hgt = hgt;
-        Hgt = 0;
+        Hgt = hgt;
+
     }
 
     public DetectorPoint(double Lon, double Lat, double hgt, string v) : this(Lon, Lat, hgt)
