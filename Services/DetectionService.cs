@@ -70,6 +70,7 @@ public class DetectionService
             bobsClient.BaseAddress = new Uri("http://lightning.vk4ya.com:9080/");
             var response = await bobsClient.GetAsync($"/detector/{detectorID}");
             BobsDetectorInfo b = (BobsDetectorInfo)await response.Content.ReadFromJsonAsync(typeof(BobsDetectorInfo));
+            Console.WriteLine("remote call complete");
             if (b != null)
                 return new DetectorPoint(b.Lon, b.Lat, b.Height, detectorID.ToString());
             else return null;
