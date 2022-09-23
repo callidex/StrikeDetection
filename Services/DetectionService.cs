@@ -61,14 +61,27 @@ public class DetectionService
     {
         //TODO: Call out to either db  or Bobs Lightsrv to get status
         // populate coords and label
+        try
+        {
 
-        HttpClient bobsClient = new HttpClient();
-        bobsClient.BaseAddress = new Uri("http://lightning.vk4ya.com:9080/");
-        var response = await bobsClient.GetAsync($"/detector/{detectorID}");
-        BobsDetectorInfo b = (BobsDetectorInfo)await response.Content.ReadFromJsonAsync(typeof(BobsDetectorInfo));
-        if (b != null)
-            return new DetectorPoint(b.Lon, b.Lat, b.Height, detectorID.ToString());
-        else return null;
+
+
+            HttpClient bobsClient = new HttpClient();
+            bobsClient.BaseAddress = new Uri("http://lightning.vk4ya.com:9080/");
+            var response = await bobsClient.GetAsync($"/detector/{detectorID}");
+            BobsDetectorInfo b = (BobsDetectorInfo)await response.Content.ReadFromJsonAsync(typeof(BobsDetectorInfo));
+            if (b != null)
+                return new DetectorPoint(b.Lon, b.Lat, b.Height, detectorID.ToString());
+            else return null;
+
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+
+        }
+
+        return null;
     }
 
     void CalculateDistancesFromTarget(DetectorPoint target)
