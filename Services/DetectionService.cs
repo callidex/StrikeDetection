@@ -44,7 +44,7 @@ public class DetectionService
         {
             return "No Solution Found";
         }
-        return $"{centre.ToString()} LAT: {target_lat:F07}°   LON: {target_lon:F07}°  Height: {target_z} Estimated radial error: {radialError:F03} m, Iterations: {it_cnt}     https://www.google.com/maps/@{target_lat:F07},{target_lon:F07},13z     ";
+        return $"https://www.google.com/maps/@{target_lat:F07},{target_lon:F07},18z     LAT: {target_lat:F07}°   LON: {target_lon:F07}°  Height: {target_z} Estimated radial error: {radialError:F03} m, Iterations: {it_cnt}     ";
     }
 
     internal class BobsDetectorInfo
