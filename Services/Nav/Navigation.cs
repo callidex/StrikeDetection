@@ -692,10 +692,10 @@ namespace Services.Nav
         /// <param name="radialError">Radial error. Square root from the final value of residual function</param>
         /// <param name="itCnt">Number of iterations taken</param>
         public static GeoPoint TDOA_Locate3D(GeoPoint3DT[] bases,
-                                         double lat_prev_deg, double lon_prev_deg, double prev_z_m,
+
                                          int maxIterations, double precisionThreshold, double simplexSize,
                                          Ellipsoid el,
-                                         double velocity,
+
                                          out double lat_deg, out double lon_deg, out double z_m, out double radialError, out int itCnt)
         {
             double xPrev = 0;
@@ -705,18 +705,10 @@ namespace Services.Nav
 
             var basesCentroid = GetPointsCentroid2D(bases);
             var basePoints = ConvertToLCS(bases, basesCentroid, el);
-            var baseLines = BuildBaseLines(basePoints, velocity);
+            var baseLines = BuildBaseLines(basePoints, 299792458);
 
-            if (!double.IsNaN(lat_prev_deg) && !double.IsNaN(lon_prev_deg))
-            {
-                Algorithms.GetDeltasByGeopoints(Algorithms.Deg2Rad(basesCentroid.Latitude), Algorithms.Deg2Rad(basesCentroid.Longitude),
-                    Algorithms.Deg2Rad(lat_prev_deg), Algorithms.Deg2Rad(lon_prev_deg), el, out yPrev, out xPrev);
-            }
 
-            if (double.IsNaN(prev_z_m))
-                prev_z_m = bases[0].Height;
-
-            Algorithms.TDOA_NLM3D_Solve(baseLines, xPrev, yPrev, prev_z_m,
+            Algorithms.TDOA_NLM3D_Solve(baseLines, 0, 0, 0,
                                         maxIterations, precisionThreshold, simplexSize,
                                         out xBest, out yBest, out z_m, out radialError, out itCnt);
 
