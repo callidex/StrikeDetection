@@ -35,7 +35,6 @@ public class DetectionService
         }
 
         var centre = Navigation.TDOA_Locate3D(allDetectors.ToArray(),
-                                          double.NaN, double.NaN, double.NaN,  // last known positions, never used here
                                           Algorithms.NLM_DEF_IT_LIMIT, Algorithms.NLM_DEF_PREC_THRLD, 10,
                                           Algorithms.WGS84Ellipsoid,
                                           velocity,  // how fast is the signal moving (maybe this is too fast for non-theory?)
