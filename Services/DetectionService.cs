@@ -15,7 +15,7 @@ public class DetectionService
 {
     const double velocity = 299792458;
 
-    public string Test(DetectionInstance instance)
+    public async Task<string> TestAsync(DetectionInstance instance)
     {
         double target_lat = 0;
         double target_lon = 0;
@@ -34,16 +34,18 @@ public class DetectionService
             allDetectors.Add(new GeoPoint3DT(p.Lat, p.Lon, p.Hgt, delta, p.Label));
         }
 
-        var centre = Navigation.TDOA_Locate3D(allDetectors.ToArray(),
+        return await Task.Run(() =>
+        {
+            var centre = Navigation.TDOA_Locate3D(allDetectors.ToArray(),
                                           Algorithms.NLM_DEF_IT_LIMIT, Algorithms.NLM_DEF_PREC_THRLD, 10,
                                           Algorithms.WGS84Ellipsoid,
-                                          velocity,  // how fast is the signal moving (maybe this is too fast for non-theory?)
                                           out target_lat, out target_lon, out target_z, out radialError, out it_cnt);
-        if (it_cnt > Algorithms.NLM_DEF_IT_LIMIT)
-        {
-            return "No Solution Found";
-        }
-        return $"https://www.google.com/maps/@{target_lat:F07},{target_lon:F07},18z     LAT: {target_lat:F07}°   LON: {target_lon:F07}°  Height: {target_z} Estimated radial error: {radialError:F03} m, Iterations: {it_cnt}     ";
+            if (it_cnt > Algorithms.NLM_DEF_IT_LIMIT)
+            {
+                return "No Solution Found";
+            }
+            return $"https://www.google.com/maps/@{target_lat:F07},{target_lon:F07},18z     LAT: {target_lat:F07}°   LON: {target_lon:F07}°  Height: {target_z} Estimated radial error: {radialError:F03} m, Iterations: {it_cnt}     ";
+        });
     }
 
     internal class BobsDetectorInfo
@@ -56,15 +58,12 @@ public class DetectionService
 
     }
 
-    internal async Task<DetectorPoint> GetPointFromDetectorID(int detectorID)
+    internal async Task<DetectorPoint> GetPointFromDetectorIDViaRemote(int detectorID)
     {
         //TODO: Call out to either db  or Bobs Lightsrv to get status
         // populate coords and label
         try
         {
-
-
-
             HttpClient bobsClient = new HttpClient();
             bobsClient.BaseAddress = new Uri("http://lightning.vk4ya.com:9080/");
             var response = await bobsClient.GetAsync($"/detector/{detectorID}");
@@ -107,20 +106,15 @@ public class DetectorPoint : DetectorPointDTO
     public double Delta { get; internal set; }
     public string V { get; }
 
-
-
     public DetectorPoint(double Lon, double Lat)
     {
         this.Lon = Lon;
         this.Lat = Lat;
     }
 
-
-
     public DetectorPoint(double Lon, double Lat, double hgt) : this(Lon, Lat)
     {
         Hgt = hgt;
-
     }
 
     public DetectorPoint(double Lon, double Lat, double hgt, string v) : this(Lon, Lat, hgt)

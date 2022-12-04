@@ -26,10 +26,10 @@ public class StrikeController : ControllerBase
     [HttpPost]
     [Route("FindStrikePoint")]
 
-    public async Task<ActionResult<StrikePoint>> FindStrikePoint([FromBody] DetectionInstance detections)
+    public ActionResult<StrikePoint> FindStrikePoint([FromBody] DetectionInstance detections)
     {
 
-        return Ok(_service.Test(detections));
+        return Ok(_service.TestAsync(detections));
     }
 
     [HttpPost]
@@ -40,10 +40,9 @@ public class StrikeController : ControllerBase
         dt.Points = new List<DetectorPointDTO>();
         foreach (var d in detectorSamples)
         {
-            var point = await _service.GetPointFromDetectorID(d.DetectorID);
+            var point = await _service.GetPointFromDetectorIDViaRemote(d.DetectorID);
             if (point != null)
             {
-
                 point.TimeFromTarget = d.TimeStamp;
                 dt.Points.Add(point);
             }
@@ -52,8 +51,7 @@ public class StrikeController : ControllerBase
         {
             Components = dt
         };
-        dr.Result = _service.Test(dt);
-
+        dr.Result = await _service.TestAsync(dt);
         return Ok(dr);
     }
     public class DetectorsResponse

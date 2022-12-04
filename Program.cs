@@ -1,16 +1,16 @@
+using Microsoft.EntityFrameworkCore;
+using StrikeDetection.Services;
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
+builder.Services.AddDbContext<LightningContext>(options => options.UseNpgsql("Host=b3.vk4ya.com;Database=lightning;Username=***;Password=***"));
+builder.Services.AddScoped<IDbService, LightningContext>();
 var app = builder.Build();
 
+
 app.UseCors(builder => builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
