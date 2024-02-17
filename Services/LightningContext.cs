@@ -23,13 +23,17 @@ public partial class LightningContext : DbContext, IDbService
         return await StoreSampleAsync(sample);
     }
 
-    public async Task<Sample[]> GetLastXSampleAsync(int count, int detector = 0)
+    public Task<Sample[]> GetLastXSampleAsync(int count, int detector = 0)
     {
-        var set = Samples.OrderByDescending(x => x.Id).Take(Math.Min(count, MAX_ROWS));
-        if (detector != 0)
-            set = set.Where(x => x.Detector == detector);
-        return await set.ToArrayAsync();
+        return GetSamples(detector).Take(Math.Min(count, MAX_ROWS)).ToArrayAsync();
     }
+
+    public IOrderedQueryable<Sample> GetSamples(int detector = 0)
+    {
+        if (detector != 0) return Samples.OrderByDescending(x => x.Id);
+        return Samples.Where(x => x.Detector == detector).OrderByDescending(x => x.Id);
+    }
+
 
     public async Task<int> AddStatus(Status status)
     {
