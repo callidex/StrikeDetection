@@ -18,53 +18,57 @@ public partial class LightningContext : DbContext, IDbService
 {
     private int MAX_ROWS = 1000;
     #region IDBService
-    public async Task<int> AddSample(Sample sample)
+    public Task<int> AddSample(Sample sample)
     {
-        return await StoreSampleAsync(sample);
+        return StoreSampleAsync(sample);
     }
 
-    public async Task<Sample[]> GetLastXSampleAsync(int count, int detector = 0)
+    public Task<Sample[]> GetLastXSampleAsync(int count, int detector = 0)
     {
-        var set = Samples.OrderByDescending(x => x.Id).Take(Math.Min(count, MAX_ROWS));
-        if (detector != 0)
-            set = set.Where(x => x.Detector == detector);
-        return await set.ToArrayAsync();
+        return GetSamples(detector).Take(Math.Min(count, MAX_ROWS)).ToArrayAsync();
     }
 
-    public async Task<int> AddStatus(Status status)
+    public IOrderedQueryable<Sample> GetSamples(int detector = 0)
     {
-        return await StoreStatusAsync(status);
+        if (detector != 0) return Samples.OrderByDescending(x => x.Id);
+        return Samples.Where(x => x.Detector == detector).OrderByDescending(x => x.Id);
     }
 
-    public async Task<Status[]> GetLastXStatusAsync(int count, int detector = 0)
+
+    public Task<int> AddStatus(Status status)
+    {
+        return StoreStatusAsync(status);
+    }
+
+    public Task<Status[]> GetLastXStatusAsync(int count, int detector = 0)
     {
         var set = Statuses.OrderByDescending(x => x.Id).Take(Math.Min(count, MAX_ROWS));
         if (detector != 0)
             set = set.Where(x => x.Detector == detector);
-        return await set.ToArrayAsync();
+        return set.ToArrayAsync();
     }
     #endregion
 
-    internal async Task<int> StoreStatusAsync(Status status)
+    internal Task<int> StoreStatusAsync(Status status)
     {
         Statuses.Add(status);
-        return await SaveChangesAsync();
+        return SaveChangesAsync();
     }
-    private async Task<int> StoreSampleAsync(Sample sample)
+    private Task<int> StoreSampleAsync(Sample sample)
     {
         Samples.Add(sample);
-        return await SaveChangesAsync();
+        return SaveChangesAsync();
     }
 
 
-    internal async Task<int> StoreDetectorAsync(DetectorInfo detectorInfo)
+    internal Task<int> StoreDetectorAsync(DetectorInfo detectorInfo)
     {
         DetectorInfos.Add(detectorInfo);
-        return await SaveChangesAsync();
+        return SaveChangesAsync();
     }
-    public async Task<DetectorInfo[]> GetAllDetectorsAsync()
+    public Task<DetectorInfo[]> GetAllDetectorsAsync()
     {
-        return await DetectorInfos.Take(MAX_ROWS).ToArrayAsync();
+        return DetectorInfos.Take(MAX_ROWS).ToArrayAsync();
     }
 
     #region Model
